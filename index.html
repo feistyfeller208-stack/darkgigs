@@ -1,86 +1,201 @@
-<!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>ABYSS PROTOCOL</title>
+
 <style>
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}body { overflow: hidden; background: #000; color: white; font-family: Arial, sans-serif; }
 
-canvas { display: block; background: #050505; }
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
 
-#ui { position: absolute; top: 20px; left: 20px; z-index: 10; pointer-events: none; }
+body{
+    overflow:hidden;
+    background:black;
+    color:white;
+    font-family:Arial, sans-serif;
+}
 
-#title { font-size: 28px; font-weight: bold; letter-spacing: 4px; }
+canvas{
+    display:block;
+    background:#030303;
+}
 
-#subtitle { opacity: 0.5; margin-top: 5px; }
+#ui{
+    position:absolute;
+    top:20px;
+    left:20px;
+    z-index:10;
+    pointer-events:none;
+}
 
-#warning { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 32px; opacity: 0; transition: 0.5s; pointer-events: none; }
+#title{
+    font-size:42px;
+    font-weight:bold;
+    letter-spacing:8px;
+}
 
-#coords { position: absolute; bottom: 20px; left: 20px; opacity: 0.4; }
+#subtitle{
+    margin-top:8px;
+    opacity:0.5;
+    font-size:18px;
+}
 
-#memory { position: absolute; bottom: 20px; right: 20px; opacity: 0.5; text-align: right; }
+#warning{
+    position:absolute;
+    top:50%;
+    left:50%;
+    transform:translate(-50%, -50%);
+    font-size:30px;
+    opacity:0;
+    transition:0.4s;
+    z-index:10;
+    pointer-events:none;
+    text-align:center;
+}
 
-.flash { animation: flash 0.3s infinite; }
+#coords{
+    position:absolute;
+    bottom:20px;
+    left:20px;
+    opacity:0.4;
+    font-size:20px;
+}
 
-@keyframes flash { 0% { opacity: 1; } 50% { opacity: 0.2; } 100% { opacity: 1; } } </style>
+#memory{
+    position:absolute;
+    bottom:20px;
+    right:20px;
+    opacity:0.5;
+    font-size:20px;
+}
 
+.flash{
+    animation:flash 0.25s infinite;
+}
+
+@keyframes flash{
+    0%{opacity:1;}
+    50%{opacity:0.2;}
+    100%{opacity:1;}
+}
+
+</style>
 </head>
-<body><div id="ui">
+<body>
+
+<div id="ui">
     <div id="title">ABYSS PROTOCOL</div>
     <div id="subtitle">THE MAZE IS OBSERVING YOU</div>
-</div><div id="warning">DO NOT TRUST THE WALLS</div><div id="coords">
+</div>
+
+<div id="warning"></div>
+
+<div id="coords">
     Sector: UNKNOWN
-</div><div id="memory">
+</div>
+
+<div id="memory">
     Memory Integrity: 100%
-</div><canvas id="game"></canvas>
+</div>
+
+<canvas id="game"></canvas>
 
 <script>
-const canvas = document.getElementById('game');
-const ctx = canvas.getContext('2d');
+
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
 
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
-const tileSize = 40;
-const cols = 50;
-const rows = 50;
 
-let maze = [];
+
+
+
+/* =========================
+   GAME SETTINGS
+========================= */
+
+const tileSize = 18;
+const cols = 70;
+const rows = 70;
+
+
+
+
+
+/* =========================
+   PLAYER
+========================= */
+
 let player = {
-    x: 1,
-    y: 1,
-    size: 12,
-    color: 'white'
+    x:1,
+    y:1,
+    radius:6,
+    color:"white"
 };
+
+
+
+
+
+/* =========================
+   CAMERA
+========================= */
 
 let camera = {
-    x: 0,
-    y: 0
+    x:0,
+    y:0
 };
 
-let memoryIntegrity = 100;
+
+
+
+
+/* =========================
+   GAME STATE
+========================= */
+
+let maze = [];
+
 let hallucinationLevel = 0;
+let memoryIntegrity = 100;
+
 let mazeShiftTimer = 0;
 
-function createMaze() {
+
+
+
+
+/* =========================
+   CREATE MAZE
+========================= */
+
+function createMaze(){
+
     maze = [];
 
-    for (let y = 0; y < rows; y++) {
+    for(let y = 0; y < rows; y++){
+
         let row = [];
 
-        for (let x = 0; x < cols; x++) {
-            if (
+        for(let x = 0; x < cols; x++){
+
+            if(
                 x === 0 ||
                 y === 0 ||
                 x === cols - 1 ||
                 y === rows - 1
-            ) {
+            ){
                 row.push(1);
-            } else {
+            }
+
+            else{
                 row.push(Math.random() > 0.68 ? 1 : 0);
             }
         }
@@ -91,30 +206,42 @@ function createMaze() {
     maze[1][1] = 0;
     maze[rows - 2][cols - 2] = 0;
 
-    carvePath(1, 1);
+    carvePath(1,1);
 }
 
-function carvePath(x, y) {
+
+
+
+
+/* =========================
+   MAZE PATH CARVER
+========================= */
+
+function carvePath(x,y){
+
     const directions = [
-        [0, -1],
-        [1, 0],
-        [0, 1],
-        [-1, 0]
+        [0,-1],
+        [1,0],
+        [0,1],
+        [-1,0]
     ].sort(() => Math.random() - 0.5);
 
-    for (const [dx, dy] of directions) {
+    for(const [dx,dy] of directions){
+
         const nx = x + dx * 2;
         const ny = y + dy * 2;
 
-        if (
-            ny > 0 &&
-            ny < rows - 1 &&
+        if(
             nx > 0 &&
+            ny > 0 &&
             nx < cols - 1 &&
+            ny < rows - 1 &&
             maze[ny][nx] === 1
-        ) {
+        ){
+
             maze[ny][nx] = 0;
             maze[y + dy][x + dx] = 0;
+
             carvePath(nx, ny);
         }
     }
@@ -122,34 +249,70 @@ function carvePath(x, y) {
 
 createMaze();
 
-function drawMaze() {
-    for (let y = 0; y < rows; y++) {
-        for (let x = 0; x < cols; x++) {
+
+
+
+
+/* =========================
+   DRAW MAZE
+========================= */
+
+function drawMaze(){
+
+    ctx.save();
+
+    ctx.scale(0.9,0.9);
+
+    for(let y = 0; y < rows; y++){
+
+        for(let x = 0; x < cols; x++){
 
             const screenX = x * tileSize - camera.x;
             const screenY = y * tileSize - camera.y;
 
-            if (maze[y][x] === 1) {
+            if(maze[y][x] === 1){
 
                 let brightness = 255;
 
-                if (hallucinationLevel > 20 && Math.random() > 0.97) {
+                if(
+                    hallucinationLevel > 15 &&
+                    Math.random() > 0.985
+                ){
                     brightness = Math.random() * 255;
                 }
 
-                ctx.fillStyle = `rgb(${brightness}, ${brightness}, ${brightness})`;
-                ctx.fillRect(screenX, screenY, tileSize, tileSize);
+                ctx.fillStyle =
+                    `rgb(${brightness},${brightness},${brightness})`;
+
+                ctx.fillRect(
+                    screenX,
+                    screenY,
+                    tileSize,
+                    tileSize
+                );
             }
         }
     }
+
+    ctx.restore();
 }
 
-function drawPlayer() {
+
+
+
+
+/* =========================
+   DRAW PLAYER
+========================= */
+
+function drawPlayer(){
+
     ctx.beginPath();
+
     ctx.arc(
-        player.x * tileSize + tileSize / 2 - camera.x,
-        player.y * tileSize + tileSize / 2 - camera.y,
-        player.size,
+        player.x * tileSize - camera.x + tileSize/2,
+        player.y * tileSize - camera.y + tileSize/2,
+        player.radius,
         0,
         Math.PI * 2
     );
@@ -158,177 +321,358 @@ function drawPlayer() {
     ctx.fill();
 }
 
-function updateCamera() {
-    camera.x = player.x * tileSize - canvas.width / 2;
-    camera.y = player.y * tileSize - canvas.height / 2;
+
+
+
+
+/* =========================
+   DRAW EXIT
+========================= */
+
+function drawExit(){
+
+    const ex = cols - 2;
+    const ey = rows - 2;
+
+    ctx.fillStyle = "red";
+
+    ctx.fillRect(
+        ex * tileSize - camera.x + 4,
+        ey * tileSize - camera.y + 4,
+        tileSize - 8,
+        tileSize - 8
+    );
 }
 
-function movePlayer(dx, dy) {
+
+
+
+
+/* =========================
+   CAMERA FOLLOW
+========================= */
+
+function updateCamera(){
+
+    const targetX =
+        player.x * tileSize - canvas.width / 2;
+
+    const targetY =
+        player.y * tileSize - canvas.height / 2;
+
+    camera.x += (targetX - camera.x) * 0.08;
+    camera.y += (targetY - camera.y) * 0.08;
+}
+
+
+
+
+
+/* =========================
+   PLAYER MOVEMENT
+========================= */
+
+function movePlayer(dx,dy){
+
     const nx = player.x + dx;
     const ny = player.y + dy;
 
-    if (maze[ny] && maze[ny][nx] === 0) {
+    if(
+        maze[ny] &&
+        maze[ny][nx] === 0
+    ){
+
         player.x = nx;
         player.y = ny;
 
-        memoryIntegrity -= 0.03;
+        memoryIntegrity -= 0.02;
+
         hallucinationLevel += 0.02;
     }
 }
 
-window.addEventListener('keydown', (e) => {
-    switch(e.key.toLowerCase()) {
-        case 'w':
-        case 'arrowup':
-            movePlayer(0, -1);
+
+
+
+
+/* =========================
+   CONTROLS
+========================= */
+
+window.addEventListener("keydown", (e)=>{
+
+    switch(e.key.toLowerCase()){
+
+        case "w":
+        case "arrowup":
+            movePlayer(0,-1);
             break;
 
-        case 's':
-        case 'arrowdown':
-            movePlayer(0, 1);
+        case "s":
+        case "arrowdown":
+            movePlayer(0,1);
             break;
 
-        case 'a':
-        case 'arrowleft':
-            movePlayer(-1, 0);
+        case "a":
+        case "arrowleft":
+            movePlayer(-1,0);
             break;
 
-        case 'd':
-        case 'arrowright':
-            movePlayer(1, 0);
+        case "d":
+        case "arrowright":
+            movePlayer(1,0);
             break;
     }
 });
 
-function randomMazeShift() {
 
-    for (let i = 0; i < 20; i++) {
 
-        let x = Math.floor(Math.random() * cols);
-        let y = Math.floor(Math.random() * rows);
 
-        if (
-            x !== player.x &&
-            y !== player.y &&
+
+/* =========================
+   RANDOM MAZE SHIFTS
+========================= */
+
+function randomMazeShift(){
+
+    for(let i = 0; i < 30; i++){
+
+        const x = Math.floor(Math.random() * cols);
+        const y = Math.floor(Math.random() * rows);
+
+        if(
             x > 1 &&
             y > 1 &&
             x < cols - 2 &&
-            y < rows - 2
-        ) {
-            maze[y][x] = maze[y][x] === 1 ? 0 : 1;
+            y < rows - 2 &&
+            !(x === player.x && y === player.y)
+        ){
+
+            maze[y][x] =
+                maze[y][x] === 1 ? 0 : 1;
         }
     }
 }
 
-function glitchText() {
-    const warning = document.getElementById('warning');
 
-    if (Math.random() > 0.996) {
-        warning.style.opacity = 1;
+
+
+
+/* =========================
+   WARNING SYSTEM
+========================= */
+
+function glitchText(){
+
+    const warning = document.getElementById("warning");
+
+    if(Math.random() > 0.996){
 
         const messages = [
-            'DO NOT TRUST THE WALLS',
-            'YOU WERE HERE BEFORE',
-            'THE EXIT MOVED',
-            'TURN BACK',
-            'IT IS LEARNING',
-            'YOU ARE OBSERVED',
-            'THIS IS NOT THE FIRST LOOP'
+
+            "DO NOT TRUST THE WALLS",
+
+            "THE EXIT MOVED",
+
+            "YOU ARE OBSERVED",
+
+            "YOU WERE HERE BEFORE",
+
+            "TURN BACK",
+
+            "THIS LOOP REMEMBERS",
+
+            "THE MAZE IS LEARNING"
+
         ];
 
-        warning.innerText = messages[
-            Math.floor(Math.random() * messages.length)
-        ];
+        warning.innerText =
+            messages[
+                Math.floor(Math.random() * messages.length)
+            ];
 
-        setTimeout(() => {
+        warning.style.opacity = 1;
+
+        setTimeout(()=>{
             warning.style.opacity = 0;
-        }, 1000);
+        },1000);
     }
 }
 
-function fakeSystemCorruption() {
-    if (hallucinationLevel > 25 && Math.random() > 0.998) {
 
-        document.body.classList.add('flash');
 
-        setTimeout(() => {
-            document.body.classList.remove('flash');
-        }, 500);
+
+
+/* =========================
+   GLITCH EFFECT
+========================= */
+
+function fakeCorruption(){
+
+    if(
+        hallucinationLevel > 20 &&
+        Math.random() > 0.998
+    ){
+
+        document.body.classList.add("flash");
+
+        setTimeout(()=>{
+            document.body.classList.remove("flash");
+        },300);
     }
 }
 
-function drawExit() {
-    const ex = cols - 2;
-    const ey = rows - 2;
 
-    ctx.fillStyle = 'red';
-    ctx.fillRect(
-        ex * tileSize - camera.x + 10,
-        ey * tileSize - camera.y + 10,
-        tileSize - 20,
-        tileSize - 20
-    );
-}
 
-function checkWin() {
-    if (player.x === cols - 2 && player.y === rows - 2) {
+
+
+/* =========================
+   WIN CONDITION
+========================= */
+
+function checkWin(){
+
+    if(
+        player.x === cols - 2 &&
+        player.y === rows - 2
+    ){
 
         document.body.innerHTML = `
+
         <div style="
-            display:flex;
-            justify-content:center;
-            align-items:center;
+            width:100vw;
             height:100vh;
             background:black;
             color:white;
+            display:flex;
+            justify-content:center;
+            align-items:center;
             flex-direction:column;
-            font-family:Arial;
             text-align:center;
+            font-family:Arial;
         ">
-            <h1>ESCAPE DETECTED</h1>
-            <p>Verifying consciousness integrity...</p>
+
+            <h1 style="
+                font-size:60px;
+                letter-spacing:6px;
+            ">
+                ESCAPE DETECTED
+            </h1>
+
             <br>
-            <p>Result: FAILURE</p>
+
+            <p style="
+                opacity:0.7;
+                font-size:24px;
+            ">
+                Verifying consciousness integrity...
+            </p>
+
+            <br><br>
+
+            <p style="
+                color:red;
+                font-size:30px;
+            ">
+                RESULT: FAILURE
+            </p>
+
             <br>
-            <small>The maze remembers you.</small>
+
+            <small style="
+                opacity:0.4;
+                font-size:18px;
+            ">
+                The maze remembers you.
+            </small>
+
         </div>
         `;
     }
 }
 
-function gameLoop() {
 
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+
+
+/* =========================
+   MAIN GAME LOOP
+========================= */
+
+function gameLoop(){
+
+    ctx.clearRect(
+        0,
+        0,
+        canvas.width,
+        canvas.height
+    );
 
     updateCamera();
 
     drawMaze();
+
     drawExit();
+
     drawPlayer();
 
     glitchText();
-    fakeSystemCorruption();
+
+    fakeCorruption();
+
+
+
+
 
     mazeShiftTimer++;
 
-    if (mazeShiftTimer > 240) {
+    if(mazeShiftTimer > 220){
+
         randomMazeShift();
+
         mazeShiftTimer = 0;
     }
 
-    document.getElementById('memory').innerText =
-        `Memory Integrity: ${Math.max(0, memoryIntegrity.toFixed(1))}%`;
+
+
+
+
+    document.getElementById("memory").innerText =
+        `Memory Integrity: ${Math.max(
+            0,
+            memoryIntegrity.toFixed(1)
+        )}%`;
+
+
+
+
 
     checkWin();
 
     requestAnimationFrame(gameLoop);
 }
 
-gameLoop();
 
-window.addEventListener('resize', () => {
+
+
+
+/* =========================
+   RESIZE
+========================= */
+
+window.addEventListener("resize", ()=>{
+
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 });
-</script></body>
-  </html>
+
+
+
+
+
+gameLoop();
+
+</script>
+
+</body>
+    </html>
