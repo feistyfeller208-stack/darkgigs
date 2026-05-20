@@ -15,7 +15,6 @@
         .empty { background: #e2e8f0; }
         .ball { background: #e94560; border-radius: 50%; box-shadow: 0 0 8px #e94560; }
         .exit { background: #f5c842; }
-        .path { background: #ff6b6b; opacity: 0.6; }
         #controls { display: grid; grid-template-columns: 60px 60px 60px; gap: 6px; margin-top: 12px; touch-action: none; }
         .btn { background: #0f3460; color: white; border: none; padding: 12px; font-size: 20px; border-radius: 10px; cursor: pointer; touch-action: manipulation; }
         .btn:active { background: #e94560; transform: scale(0.95); }
@@ -47,7 +46,7 @@
         // --- Maze Generation ---
         const ROWS = 11, COLS = 21;
         let maze = [], player = [0, 1], exit = [ROWS-1, COLS-2];
-        let moves = 0, jumps = 0, gameOver = false, path = [];
+        let moves = 0, jumps = 0, gameOver = false;
 
         function generateMaze() {
             maze = Array(ROWS).fill().map(() => Array(COLS).fill(1));
@@ -68,7 +67,7 @@
             maze[ROWS-1][COLS-2] = 0;
             player = [0, 1];
             exit = [ROWS-1, COLS-2];
-            moves = 0; jumps = 0; gameOver = false; path = [];
+            moves = 0; jumps = 0; gameOver = false;
         }
 
         // --- Rendering ---
@@ -83,7 +82,6 @@
                     if (maze[r][c] === 1) cell.classList.add('wall');
                     else if (r === player[0] && c === player[1]) cell.classList.add('ball');
                     else if (r === exit[0] && c === exit[1]) cell.classList.add('exit');
-                    else if (path.some(p => p[0] === r && p[1] === c)) cell.classList.add('path');
                     else cell.classList.add('empty');
                     container.appendChild(cell);
                 }
@@ -103,7 +101,6 @@
             if (isValid(nr, nc) && maze[nr][nc] === 0) {
                 player = [nr, nc];
                 moves++;
-                path.push([nr, nc]);
                 if (player[0] === exit[0] && player[1] === exit[1]) gameOver = true;
                 render();
                 return true;
@@ -121,7 +118,6 @@
                     player = [jr, jc];
                     moves++;
                     jumps++;
-                    path.push([jr, jc]);
                     if (player[0] === exit[0] && player[1] === exit[1]) gameOver = true;
                     render();
                     return true;
@@ -132,7 +128,6 @@
 
         function resetGame() {
             generateMaze();
-            path = [];
             render();
         }
 
@@ -168,4 +163,4 @@
         render();
     </script>
 </body>
-    </html>
+                         </html>
